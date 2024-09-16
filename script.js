@@ -108,7 +108,9 @@ function updatePlayerTurnDisplay() {
     playerTurnDiv.textContent = `Current Turn: ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}`;
 }
 
-function handleSquareClick() {
+function handleSquareClick(event) {
+    event.stopPropagation(); // Prevent event from reaching document listener
+
     const index = parseInt(this.dataset.index);
     const piece = boardState[index];
 
