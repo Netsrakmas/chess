@@ -1,5 +1,5 @@
 // Game Configuration
-let singlePlayer = false; // Set to true for single-player mode against AI
+let singlePlayer = true; // Enable single-player mode against AI
 
 // Initial Board Setup
 const initialBoard = [
@@ -25,6 +25,7 @@ let castlingRights = {
     whiteRookMoved: [false, false], // [Queenside, Kingside]
     blackRookMoved: [false, false],
 };
+let moveHistory = [];
 
 // DOM Elements
 const chessboard = document.getElementById('chessboard');
@@ -40,11 +41,26 @@ if (singlePlayer && currentPlayer === 'black') {
 // Event Listeners
 document.getElementById('reset-button').addEventListener('click', resetGame);
 
+// Deselect the selected piece when clicking outside the board
+document.addEventListener('click', function(event) {
+    const isClickInsideBoard = chessboard.contains(event.target);
+    if (!isClickInsideBoard && selectedPiece !== null) {
+        selectedPiece = null;
+        selectedSquare = null;
+        renderBoard();
+    }
+});
+
 // Helper Functions
 
 function renderBoard() {
     clearHighlights();
     chessboard.innerHTML = ''; // Clear the board
+
+    // Check if the kings are in check
+    const whiteInCheck = isKingInCheck('white');
+    const blackInCheck = isKingInCheck('black');
+
     for (let i = 0; i < 64; i++) {
         const square = document.createElement('div');
         square.classList.add('square');
@@ -63,6 +79,14 @@ function renderBoard() {
             const pieceElement = document.createElement('div');
             pieceElement.textContent = piece;
             pieceElement.classList.add('piece');
+
+            // Highlight the king if in check
+            if (piece === '♔' && whiteInCheck) {
+                pieceElement.classList.add('king-in-check');
+            } else if (piece === '♚' && blackInCheck) {
+                pieceElement.classList.add('king-in-check');
+            }
+
             square.appendChild(pieceElement);
         }
 
@@ -98,6 +122,9 @@ function handleSquareClick() {
             boardState[toIndex] = movingPiece;
             boardState[fromIndex] = '';
 
+            // Record the move
+            recordMove(movingPiece, fromIndex, toIndex);
+
             // Update en passant target
             if (movingPiece === '♙' || movingPiece === '♟') {
                 const fromRow = Math.floor(fromIndex / 8);
@@ -125,13 +152,9 @@ function handleSquareClick() {
             updatePlayerTurnDisplay();
             renderBoard();
 
-            // Check for check or checkmate
-            if (isKingInCheck(currentPlayer)) {
-                if (isCheckmate(currentPlayer)) {
-                    alert(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} is in checkmate!`);
-                } else {
-                    alert(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} is in check!`);
-                }
+            // Check for checkmate
+            if (isKingInCheck(currentPlayer) && isCheckmate(currentPlayer)) {
+                alert(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} is in checkmate!`);
             }
 
             if (singlePlayer && currentPlayer === 'black') {
@@ -494,6 +517,8 @@ function resetGame() {
     enPassantTarget = null;
     selectedPiece = null;
     selectedSquare = null;
+    moveHistory = [];
+    updateMoveHistoryDisplay();
     updatePlayerTurnDisplay();
     renderBoard();
 }
@@ -533,6 +558,9 @@ function makeAIMove() {
     boardState[toIndex] = movingPiece;
     boardState[fromIndex] = '';
 
+    // Record the move
+    recordMove(movingPiece, fromIndex, toIndex);
+
     // Update en passant target
     if (movingPiece === '♙' || movingPiece === '♟') {
         const fromRow = Math.floor(fromIndex / 8);
@@ -561,12 +589,32 @@ function makeAIMove() {
     updatePlayerTurnDisplay();
     renderBoard();
 
-    // Check for check or checkmate
-    if (isKingInCheck(currentPlayer)) {
-        if (isCheckmate(currentPlayer)) {
-            alert(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} is in checkmate!`);
-        } else {
-            alert(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} is in check!`);
-        }
+    // Check for checkmate
+    if (isKingInCheck(currentPlayer) && isCheckmate(currentPlayer)) {
+        alert(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} is in checkmate!`);
     }
+}
+
+function recordMove(piece, fromIndex, toIndex) {
+    const fromSquare = indexToSquareName(fromIndex);
+    const toSquare = indexToSquareName(toIndex);
+    const move = `${piece} ${fromSquare} ➔ ${toSquare}`;
+    moveHistory.push(move);
+    updateMoveHistoryDisplay();
+}
+
+function indexToSquareName(index) {
+    const file = 'abcdefgh'[index % 8];
+    const rank = 8 - Math.floor(index / 8);
+    return `${file}${rank}`;
+}
+
+function updateMoveHistoryDisplay() {
+    const moveHistoryList = document.getElementById('move-history');
+    moveHistoryList.innerHTML = '';
+    moveHistory.forEach((move, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = move;
+        moveHistoryList.appendChild(listItem);
+    });
 }
