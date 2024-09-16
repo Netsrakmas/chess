@@ -5,6 +5,12 @@ body {
     font-family: Arial, sans-serif;
 }
 
+#game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 #player-turn {
     margin-bottom: 10px;
     font-size: 24px;
@@ -49,8 +55,22 @@ body {
     background-color: green !important;
 }
 
+.king-in-check {
+    background-color: red !important;
+}
+
 #reset-button {
     margin-top: 10px;
     padding: 10px 20px;
     font-size: 16px;
+}
+
+#move-history-container {
+    margin-top: 20px;
+    max-width: 480px;
+}
+
+#move-history {
+    list-style-type: decimal;
+    padding-left: 20px;
 }
