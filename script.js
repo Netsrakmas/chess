@@ -371,8 +371,9 @@ function isValidKingMove(fromIndex, toIndex, playerColor) {
         const rookCol = direction === 1 ? 7 : 0;
         const rookIndex = fromRow * 8 + rookCol;
         const rook = boardState[rookIndex];
+        const rookMoved = castlingRights[`${playerColor}RookMoved`][direction === 1 ? 1 : 0];
 
-        if (rook && ((playerColor === 'white' && rook === '♖') || (playerColor === 'black' && rook === '♜'))) {
+        if (rook && ((playerColor === 'white' && rook === '♖') || (playerColor === 'black' && rook === '♜')) && !rookMoved) {
             const betweenSquares = direction === 1
                 ? [fromIndex + 1, fromIndex + 2]
                 : [fromIndex - 1, fromIndex - 2, fromIndex - 3];
@@ -386,6 +387,13 @@ function isValidKingMove(fromIndex, toIndex, playerColor) {
 
             // Check that the king does not pass through or end up in check
             for (let squareIndex of [fromIndex, ...betweenSquares]) {
+                if (squareIndex === fromIndex) {
+                    if (isKingInCheck(playerColor)) {
+                        return false;
+                    }
+                    continue;
+                }
+
                 const originalPiece = boardState[squareIndex];
                 boardState[squareIndex] = boardState[fromIndex];
                 boardState[fromIndex] = '';
