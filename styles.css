@@ -2,13 +2,26 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', Arial, sans-serif;
+    background: linear-gradient(135deg, #fafafa, #eaeaea);
+    margin: 0;
+    padding: 20px;
+}
+
+.page-title {
+    margin-bottom: 20px;
+    font-size: 32px;
+    font-weight: 700;
 }
 
 #game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 #player-turn {
@@ -23,6 +36,9 @@ body {
     display: flex;
     flex-wrap: wrap;
     border: 2px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .square {
@@ -63,11 +79,25 @@ body {
     margin-top: 10px;
     padding: 10px 20px;
     font-size: 16px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#reset-button:hover {
+    background-color: #45a049;
 }
 
 #move-history-container {
     margin-top: 20px;
     max-width: 480px;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #move-history {
