@@ -124,6 +124,17 @@ function handleSquareClick(event) {
             boardState[toIndex] = movingPiece;
             boardState[fromIndex] = '';
 
+            // Handle castling rook movement
+            if ((movingPiece === '♔' || movingPiece === '♚') && Math.abs(toIndex - fromIndex) === 2) {
+                const direction = toIndex > fromIndex ? 1 : -1;
+                const rookFromIndex = fromIndex + (direction === 1 ? 3 : -4);
+                const rookToIndex = fromIndex + direction;
+                const rookPiece = boardState[rookFromIndex];
+                boardState[rookToIndex] = rookPiece;
+                boardState[rookFromIndex] = '';
+                updateCastlingRights(rookPiece, rookFromIndex);
+            }
+
             // Record the move
             recordMove(movingPiece, fromIndex, toIndex);
 
@@ -354,60 +365,42 @@ function isValidKingMove(fromIndex, toIndex, playerColor) {
         return true;
     }
 
-    // Castling
+    // Castling validation (do not move pieces here)
     if (!castlingRights[`${playerColor}KingMoved`] && rowDiff === 0 && colDiff === 2) {
         const direction = toCol > fromCol ? 1 : -1;
         const rookCol = direction === 1 ? 7 : 0;
         const rookIndex = fromRow * 8 + rookCol;
         const rook = boardState[rookIndex];
+
         if (rook && ((playerColor === 'white' && rook === '♖') || (playerColor === 'black' && rook === '♜'))) {
             const betweenSquares = direction === 1
                 ? [fromIndex + 1, fromIndex + 2]
                 : [fromIndex - 1, fromIndex - 2, fromIndex - 3];
 
-            // Check if squares between king and rook are empty
+            // Ensure path between king and rook is clear
             for (let squareIndex of betweenSquares) {
                 if (boardState[squareIndex]) {
                     return false;
                 }
             }
 
-            // Check if king passes through check
+            // Check that the king does not pass through or end up in check
             for (let squareIndex of [fromIndex, ...betweenSquares]) {
-                // Temporarily move king
                 const originalPiece = boardState[squareIndex];
                 boardState[squareIndex] = boardState[fromIndex];
                 boardState[fromIndex] = '';
 
-                if (isKingInCheck(playerColor)) {
-                    // Revert move
-                    boardState[fromIndex] = boardState[squareIndex];
-                    boardState[squareIndex] = originalPiece;
-                    return false;
-                }
+                const inCheck = isKingInCheck(playerColor);
 
-                // Revert move
                 boardState[fromIndex] = boardState[squareIndex];
                 boardState[squareIndex] = originalPiece;
+
+                if (inCheck) {
+                    return false;
+                }
             }
 
-            // Perform castling
-            boardState[toIndex] = boardState[fromIndex];
-            boardState[fromIndex] = '';
-            // Move rook
-            const newRookIndex = fromRow * 8 + (fromCol + direction);
-            boardState[newRookIndex] = rook;
-            boardState[rookIndex] = '';
-
-            // Update castling rights
-            castlingRights[`${playerColor}KingMoved`] = true;
-            if (direction === 1) {
-                castlingRights[`${playerColor}RookMoved`][1] = true;
-            } else {
-                castlingRights[`${playerColor}RookMoved`][0] = true;
-            }
-
-            return false; // Return false because move has been handled
+            return true;
         }
     }
 
@@ -559,6 +552,17 @@ function makeAIMove() {
     // Update board state
     boardState[toIndex] = movingPiece;
     boardState[fromIndex] = '';
+
+    // Handle castling rook movement for AI
+    if ((movingPiece === '♔' || movingPiece === '♚') && Math.abs(toIndex - fromIndex) === 2) {
+        const direction = toIndex > fromIndex ? 1 : -1;
+        const rookFromIndex = fromIndex + (direction === 1 ? 3 : -4);
+        const rookToIndex = fromIndex + direction;
+        const rookPiece = boardState[rookFromIndex];
+        boardState[rookToIndex] = rookPiece;
+        boardState[rookFromIndex] = '';
+        updateCastlingRights(rookPiece, rookFromIndex);
+    }
 
     // Record the move
     recordMove(movingPiece, fromIndex, toIndex);
